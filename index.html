@@ -3,23 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DTM Test Platforma v3.0</title>
+    <title>DTM Imtihon Platformasi</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; padding: 15px; background-color: #f0f4f8; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
-        .q-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .q-card { background: white; padding: 10px; border-radius: 10px; border-left: 4px solid #0088cc; font-size: 14px; }
-        .options { display: flex; gap: 8px; margin-top: 5px; }
-        .btn { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; margin-top: 20px; cursor: pointer; }
-        .btn:disabled { background: #ccc; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 15px; color: #333; }
+        .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        h3 { margin-top: 0; color: #0088cc; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #dfe3e8; border-radius: 10px; font-size: 16px; box-sizing: border-box; transition: 0.3s; }
+        input:focus { border-color: #0088cc; outline: none; }
+        .q-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .q-card { background: white; padding: 12px; border-radius: 12px; border-left: 5px solid #0088cc; box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
+        .options { display: flex; justify-content: space-between; margin-top: 8px; }
+        .btn { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { background: #bdc3c7; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h3>👤 Ma'lumotlaringiz</h3>
-        <input type="text" id="fullname" placeholder="Ism Familiyangizni yozing..." required>
+        <h3>📝 Ro'yxatdan o'tish</h3>
+        <input type="text" id="fullname" placeholder="Ism Familiyangiz (Masalan: Ali Valiyev)" required>
         <select id="subject" onchange="generateQuestions()">
             <option value="Matematika">Matematika</option>
             <option value="Ona tili">Ona tili</option>
@@ -33,11 +36,11 @@
             <option value="Kimyo">Kimyo</option>
             <option value="Umumiy">Umumiy (90 talik DTM)</option>
         </select>
-        <input type="number" id="testCode" placeholder="Test kodi">
+        <input type="number" id="testCode" placeholder="Test kodi (Masalan: 01)">
     </div>
 
     <form id="quizForm" class="q-container"></form>
-    <button type="button" id="submitBtn" class="btn" onclick="submitTest()">Testni Yakunlash</button>
+    <button type="button" id="submitBtn" class="btn" onclick="sendData()">Natijani Yuborish</button>
 
     <script>
         const tg = window.Telegram.WebApp;
@@ -63,10 +66,17 @@
         }
         generateQuestions();
 
-        function submitTest() {
-            const name = document.getElementById('fullname').value;
+        function sendData() {
+            const name = document.getElementById('fullname').value.trim();
             const code = document.getElementById('testCode').value;
-            if(!name || !code) { alert("Ism va kodni to'ldiring!"); return; }
+            
+            // 2-Muammo: Ism nazorati
+            const nameParts = name.split(" ");
+            if (nameParts.length < 2 || nameParts[1].length < 2) {
+                alert("Iltimos, ism va familiyangizni to'liq kiriting!");
+                return;
+            }
+            if(!code) { alert("Test kodini kiriting!"); return; }
 
             document.getElementById('submitBtn').disabled = true;
             document.getElementById('submitBtn').innerText = "Yuborilmoqda...";
@@ -80,7 +90,7 @@
                 test_code: code,
                 answers: answers
             }));
-            setTimeout(() => tg.close(), 700);
+            setTimeout(() => tg.close(), 800);
         }
     </script>
 </body>
