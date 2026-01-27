@@ -3,25 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DTM Test Platforma</title>
+    <title>DTM Test Platforma v3.0</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; padding: 15px; background-color: #f0f4f8; color: #333; }
-        .header { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        select, input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; }
-        select:focus { border-color: #0088cc; }
+        body { font-family: 'Segoe UI', sans-serif; padding: 15px; background-color: #f0f4f8; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
         .q-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .q-card { background: white; padding: 10px; border-radius: 10px; border-left: 4px solid #0088cc; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .options { display: flex; gap: 5px; margin-top: 5px; justify-content: space-between; }
-        .btn { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; margin-top: 20px; cursor: pointer; transition: 0.3s; }
+        .q-card { background: white; padding: 10px; border-radius: 10px; border-left: 4px solid #0088cc; font-size: 14px; }
+        .options { display: flex; gap: 8px; margin-top: 5px; }
+        .btn { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; margin-top: 20px; cursor: pointer; }
         .btn:disabled { background: #ccc; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h3 style="margin-top:0;">📚 Imtihon Markazi</h3>
-        <label>Fanni tanlang:</label>
-        <select id="subject" onchange="adjustQuestions()">
+    <div class="card">
+        <h3>👤 Ma'lumotlaringiz</h3>
+        <input type="text" id="fullname" placeholder="Ism Familiyangizni yozing..." required>
+        <select id="subject" onchange="generateQuestions()">
             <option value="Matematika">Matematika</option>
             <option value="Ona tili">Ona tili</option>
             <option value="Rus tili">Rus tili</option>
@@ -34,23 +33,20 @@
             <option value="Kimyo">Kimyo</option>
             <option value="Umumiy">Umumiy (90 talik DTM)</option>
         </select>
-        <label>Test kodi:</label>
-        <input type="number" id="testCode" placeholder="Masalan: 11" required>
+        <input type="number" id="testCode" placeholder="Test kodi">
     </div>
 
-    <form id="quizForm">
-        <div id="questions" class="q-container"></div>
-        <button type="button" id="submitBtn" class="btn" onclick="submitTest()">Natijani Yuborish</button>
-    </form>
+    <form id="quizForm" class="q-container"></form>
+    <button type="button" id="submitBtn" class="btn" onclick="submitTest()">Testni Yakunlash</button>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        function adjustQuestions() {
+        function generateQuestions() {
             const subj = document.getElementById('subject').value;
             const count = (subj === "Umumiy") ? 90 : 30;
-            const container = document.getElementById('questions');
+            const container = document.getElementById('quizForm');
             container.innerHTML = "";
             for (let i = 1; i <= count; i++) {
                 container.innerHTML += `
@@ -65,26 +61,26 @@
                     </div>`;
             }
         }
-        adjustQuestions();
+        generateQuestions();
 
         function submitTest() {
-            const btn = document.getElementById('submitBtn');
-            const tCode = document.getElementById('testCode').value;
-            if (!tCode) { alert("Test kodini kiriting!"); return; }
+            const name = document.getElementById('fullname').value;
+            const code = document.getElementById('testCode').value;
+            if(!name || !code) { alert("Ism va kodni to'ldiring!"); return; }
 
-            btn.disabled = true;
-            btn.innerText = "Yuborilmoqda...";
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').innerText = "Yuborilmoqda...";
 
-            const data = {
+            const answers = {};
+            new FormData(document.getElementById('quizForm')).forEach((v, k) => answers[k] = v);
+
+            tg.sendData(JSON.stringify({
+                full_name: name,
                 subject: document.getElementById('subject').value,
-                test_code: tCode,
-                answers: {}
-            };
-            const form = new FormData(document.getElementById('quizForm'));
-            form.forEach((v, k) => data.answers[k] = v);
-            
-            tg.sendData(JSON.stringify(data));
-            setTimeout(() => { tg.close(); }, 500);
+                test_code: code,
+                answers: answers
+            }));
+            setTimeout(() => tg.close(), 700);
         }
     </script>
 </body>
