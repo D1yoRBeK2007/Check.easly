@@ -1,65 +1,91 @@
 <!DOCTYPE html>
-<html>
+<html lang="uz">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Tekshiruvchi</title>
+    <title>DTM Test Platforma</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; background-color: #f4f4f9; padding: 20px; }
-        .test-item { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h3 { margin-top: 0; color: #333; }
-        .options button { padding: 10px 20px; margin-right: 5px; border: 1px solid #ddd; border-radius: 5px; cursor: pointer; }
-        .selected { background-color: #0088cc !important; color: white; border: none; }
-        #send-btn { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 10px; font-size: 16px; margin-top: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; padding: 15px; background-color: #f0f4f8; color: #333; }
+        .header { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        select, input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; }
+        select:focus { border-color: #0088cc; }
+        .q-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .q-card { background: white; padding: 10px; border-radius: 10px; border-left: 4px solid #0088cc; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .options { display: flex; gap: 5px; margin-top: 5px; justify-content: space-between; }
+        .btn { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; margin-top: 20px; cursor: pointer; transition: 0.3s; }
+        .btn:disabled { background: #ccc; }
     </style>
 </head>
 <body>
+    <div class="header">
+        <h3 style="margin-top:0;">📚 Imtihon Markazi</h3>
+        <label>Fanni tanlang:</label>
+        <select id="subject" onchange="adjustQuestions()">
+            <option value="Matematika">Matematika</option>
+            <option value="Ona tili">Ona tili</option>
+            <option value="Rus tili">Rus tili</option>
+            <option value="Ingliz tili">Ingliz tili</option>
+            <option value="Fizika">Fizika</option>
+            <option value="Huquq">Huquq</option>
+            <option value="Tarix">Tarix</option>
+            <option value="IQ">IQ</option>
+            <option value="Biologiya">Biologiya</option>
+            <option value="Kimyo">Kimyo</option>
+            <option value="Umumiy">Umumiy (90 talik DTM)</option>
+        </select>
+        <label>Test kodi:</label>
+        <input type="number" id="testCode" placeholder="Masalan: 11" required>
+    </div>
 
-    <div id="quiz-container">
-        </div>
-
-    <button id="send-btn">Javoblarni yuborish</button>
+    <form id="quizForm">
+        <div id="questions" class="q-container"></div>
+        <button type="button" id="submitBtn" class="btn" onclick="submitTest()">Natijani Yuborish</button>
+    </form>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Oynani to'liq ekranga yoyish
+        tg.expand();
 
-        const totalQuestions = 30; // Savollar soni
-        let userAnswers = {};
-
-        // Savollarni generatsiya qilish
-        const container = document.getElementById('quiz-container');
-        for (let i = 1; i <= totalQuestions; i++) {
-            const div = document.createElement('div');
-            div.className = 'test-item';
-            div.innerHTML = `
-                <h3>${i}-savol</h3>
-                <div class="options" id="q${i}">
-                    <button onclick="selectOption(${i}, 'A')">A</button>
-                    <button onclick="selectOption(${i}, 'B')">B</button>
-                    <button onclick="selectOption(${i}, 'C')">C</button>
-                    <button onclick="selectOption(${i}, 'D')">D</button>
-                </div>
-            `;
-            container.appendChild(div);
-        }
-
-        function selectOption(qNum, option) {
-            userAnswers[qNum] = option;
-            const buttons = document.querySelectorAll(`#q${qNum} button`);
-            buttons.forEach(btn => btn.classList.remove('selected'));
-            event.target.classList.add('selected');
-        }
-
-        document.getElementById('send-btn').addEventListener('click', () => {
-            if (Object.keys(userAnswers).length < totalQuestions) {
-                alert("Iltimos, barcha savollarga javob bering!");
-                return;
+        function adjustQuestions() {
+            const subj = document.getElementById('subject').value;
+            const count = (subj === "Umumiy") ? 90 : 30;
+            const container = document.getElementById('questions');
+            container.innerHTML = "";
+            for (let i = 1; i <= count; i++) {
+                container.innerHTML += `
+                    <div class="q-card">
+                        <b>${i}-savol</b>
+                        <div class="options">
+                            <label><input type="radio" name="${i}" value="A"> A</label>
+                            <label><input type="radio" name="${i}" value="B"> B</label>
+                            <label><input type="radio" name="${i}" value="C"> C</label>
+                            <label><input type="radio" name="${i}" value="D"> D</label>
+                        </div>
+                    </div>`;
             }
-            // Ma'lumotni botga yuborish
-            tg.sendData(JSON.stringify(userAnswers));
-        });
+        }
+        adjustQuestions();
+
+        function submitTest() {
+            const btn = document.getElementById('submitBtn');
+            const tCode = document.getElementById('testCode').value;
+            if (!tCode) { alert("Test kodini kiriting!"); return; }
+
+            btn.disabled = true;
+            btn.innerText = "Yuborilmoqda...";
+
+            const data = {
+                subject: document.getElementById('subject').value,
+                test_code: tCode,
+                answers: {}
+            };
+            const form = new FormData(document.getElementById('quizForm'));
+            form.forEach((v, k) => data.answers[k] = v);
+            
+            tg.sendData(JSON.stringify(data));
+            setTimeout(() => { tg.close(); }, 500);
+        }
     </script>
 </body>
 </html>
