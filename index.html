@@ -1,145 +1,92 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Imtihon Platformasi</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 15px; color: #333; }
-        .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
-        h3 { margin-top: 0; color: #0088cc; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        label { font-size: 14px; font-weight: bold; color: #555; display: block; margin-top: 10px; }
-        input, select { width: 100%; padding: 12px; margin: 5px 0 15px 0; border: 2px solid #dfe3e8; border-radius: 10px; font-size: 16px; box-sizing: border-box; transition: 0.3s; }
-        input:focus { border-color: #0088cc; outline: none; box-shadow: 0 0 8px rgba(0,136,204,0.2); }
-        .q-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .q-card { background: white; padding: 12px; border-radius: 12px; border-left: 5px solid #0088cc; box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
-        .options { display: flex; justify-content: space-between; margin-top: 8px; }
-        .btn { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
-        .btn:active { transform: scale(0.98); }
-        .btn:disabled { background: #bdc3c7; }
-        .hint { font-size: 12px; color: #888; margin-top: -10px; margin-bottom: 10px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Imtihon Platformasi</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+body { font-family: 'Segoe UI', sans-serif; background:#f0f2f5; padding:15px; }
+.card { background:white; padding:20px; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.08); margin-bottom:20px; }
+h3 { color:#0088cc; border-bottom:2px solid #eee; padding-bottom:10px; }
+label { display:block; margin-top:10px; font-weight:bold; }
+input, select { width:100%; padding:12px; margin:5px 0 15px 0; border-radius:10px; border:2px solid #dfe3e8; }
+.btn { width:100%; padding:18px; background:#28a745; color:white; border:none; border-radius:12px; font-size:18px; cursor:pointer; margin-top:20px; }
+.q-container { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.q-card { background:white; padding:12px; border-radius:12px; border-left:5px solid #0088cc; box-shadow:0 2px 6px rgba(0,0,0,0.04); }
+.options { display:flex; justify-content:space-between; margin-top:8px; }
+</style>
 </head>
 <body>
-    <div class="card">
-        <h3>📝 Ro'yxatdan o'tish</h3>
-        
-        <label for="fullname">Ism va Familiya:</label>
-        <input type="text" id="fullname" placeholder="Namuna: Ali Valiyev" required>
-        <div class="hint">Ism va familiya kamida 3 tadan harf va orada bo'sh joy bo'lishi shart.</div>
+<div class="card">
+<h3>📝 Ro'yxatdan o'tish</h3>
+<label>Ism va Familiya:</label>
+<input type="text" id="fullname" placeholder="Namuna: Ali Valiyev">
+<label>Fan tanlang:</label>
+<select id="subject" onchange="generateQuestions()">
+<option value="Matematika">Matematika</option>
+<option value="Ona tili">Ona tili</option>
+<option value="Huquq">Huquq</option>
+<option value="Tarix">Tarix</option>
+<option value="Biologiya">Biologiya</option>
+<option value="Kimyo">Kimyo</option>
+<option value="Fizika">Fizika</option>
+<option value="Rus tili">Rus tili</option>
+<option value="IQ">IQ (Mantiq)</option>
+<option value="Boshqa">Boshqa fanlar</option>
+<option value="Umumiy">Umumiy (90 talik DTM)</option>
+</select>
+<label>Test kodi:</label>
+<input type="text" id="testCode" placeholder="Namuna: 04 yoki 125">
+</div>
 
-        <label for="subject">Fan tanlang:</label>
-        <select id="subject" onchange="generateQuestions()">
-            <option value="Matematika">Matematika</option>
-            <option value="Ona tili">Ona tili</option>
-            <option value="Huquq">Huquq</option>
-            <option value="Tarix">Tarix</option>
-            <option value="Biologiya">Biologiya</option>
-            <option value="Kimyo">Kimyo</option>
-            <option value="Fizika">Fizika</option>
-            <option value="Rus tili">Rus tili</option>
-            <option value="IQ">IQ (Mantiq)</option>
-            <option value="Boshqa">Boshqa fanlar</option>
-            <option value="Umumiy">Umumiy (90 talik DTM)</option>
-        </select>
+<form id="quizForm" class="q-container"></form>
+<button type="button" class="btn" onclick="sendData()">Natijani Yuborish</button>
 
-        <label for="testCode">Test kodi:</label>
-        <input type="text" id="testCode" placeholder="Namuna: 04 yoki 125">
-    </div>
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
 
-    <form id="quizForm" class="q-container"></form>
-    <button type="button" id="submitBtn" class="btn" onclick="sendData()">Natijani Yuborish</button>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrfsRvPc_nP6EULoPJ7oe2F5SpWRQRagvSx7r63RNNivKOIaRSv1SXPaZ8raxSAd3wEg/exec";
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+function generateQuestions(){
+  const subj = document.getElementById('subject').value;
+  const count = (subj==="Umumiy")?90:30;
+  const container = document.getElementById('quizForm');
+  container.innerHTML="";
+  for(let i=1;i<=count;i++){
+    container.innerHTML += `
+      <div class="q-card">
+        <b>${i}-savol</b>
+        <div class="options">
+          <label><input type="radio" name="${i}" value="A" required> A</label>
+          <label><input type="radio" name="${i}" value="B"> B</label>
+          <label><input type="radio" name="${i}" value="C"> C</label>
+          <label><input type="radio" name="${i}" value="D"> D</label>
+        </div>
+      </div>`;
+  }
+}
+generateQuestions();
 
-        // 1. URL TO'G'IRLANDI (Takrorlanish olib tashlandi)
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQWIAdr6YgYriIUZQsjW_xNhentrYYS6RDt4g-ZaEBNMUhZcdeLVo6C68gRZdC9_l5iA/exec";
+async function sendData(){
+  const name = document.getElementById('fullname').value.trim();
+  const code = document.getElementById('testCode').value.trim();
+  const subject = document.getElementById('subject').value;
 
-        function generateQuestions() {
-            const subj = document.getElementById('subject').value;
-            const count = (subj === "Umumiy") ? 90 : 30;
-            const container = document.getElementById('quizForm');
-            container.innerHTML = "";
-            for (let i = 1; i <= count; i++) {
-                container.innerHTML += `
-                    <div class="q-card">
-                        <b>${i}-savol</b>
-                        <div class="options">
-                            <label><input type="radio" name="${i}" value="A" required> A</label>
-                            <label><input type="radio" name="${i}" value="B"> B</label>
-                            <label><input type="radio" name="${i}" value="C"> C</label>
-                            <label><input type="radio" name="${i}" value="D"> D</label>
-                        </div>
-                    </div>`;
-            }
-        }
-        generateQuestions();
+  if(name.split(/\s+/).length<2){ alert("Iltimos ism va familiya to‘liq!"); return;}
+  if(!code){ alert("Test kodini kiriting!"); return;}
 
-        async function sendData() {
-            const nameInput = document.getElementById('fullname').value.trim();
-            const code = document.getElementById('testCode').value.trim();
-            const subject = document.getElementById('subject').value;
+  const formData = new FormData(document.getElementById('quizForm'));
+  let answers = [];
+  const count = (subject==="Umumiy")?90:30;
+  for(let i=1;i<=count;i++) answers.push(formData.get(i.toString())||" ");
+  const payload = {type:"test_result", userId: tg.initDataUnsafe.user?tg.initDataUnsafe.user.id:"6045817037", name, kod:code, answers:answers.join(""), subject};
 
-            // ISMNI TEKSHIRISH (Filtr: Kamida 2 ta so'z, har biri kamida 3 ta harf)
-            const words = nameInput.split(/\s+/);
-            const isValidName = words.length >= 2 && words.every(w => w.length >= 3);
-
-            if (!isValidName) {
-                alert("Iltimos, ism va familiyangizni to'liq yozing!\nNamuna: Ali Valiyev (Nickname mumkin emas)");
-                return;
-            }
-
-            if (!code) { alert("Test kodini kiriting!"); return; }
-
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.disabled = true;
-            submitBtn.innerText = "Yuborilmoqda...";
-
-            const form = document.getElementById('quizForm');
-            const formData = new FormData(form);
-            let answersArr = [];
-            
-            const count = (subject === "Umumiy") ? 90 : 30;
-            for (let i = 1; i <= count; i++) {
-                answersArr.push(formData.get(i.toString()) || " ");
-            }
-            const answersString = answersArr.join("");
-
-            // Google Script-ga yuboriladigan ob'ekt
-            const payload = {
-                type: "test_result", // Script'ga nima ekanini bildiramiz
-                userId: tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : "6045817037",
-                name: nameInput,
-                kod: code,
-                answers: answersString,
-                subject: subject
-            };
-
-            try {
-                // Fetch so'rovi
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', 
-                    cache: 'no-cache',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                // Muvaffaqiyatli xabar
-                setTimeout(() => {
-                    alert("✅ Natijangiz qabul qilindi! Botga qaytib javobni ko'rishingiz mumkin.");
-                    tg.close();
-                }, 1000);
-
-            } catch (error) {
-                alert("❌ Xatolik yuz berdi: " + error);
-                submitBtn.disabled = false;
-                submitBtn.innerText = "Natijani Yuborish";
-            }
-        }
-    </script>
+  await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',cache:'no-cache',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  alert("✅ Natijangiz qabul qilindi!");
+  tg.close();
+}
+</script>
 </body>
 </html>
