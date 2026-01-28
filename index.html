@@ -22,21 +22,17 @@
 <body>
     <div class="card">
         <h3>📝 Ro'yxatdan o'tish</h3>
-        <input type="text" id="fullname" placeholder="Ism Familiyangiz (Masalan: Ali Valiyev)" required>
+        <input type="text" id="fullname" placeholder="Ism Familiyangiz" required>
         <select id="subject" onchange="generateQuestions()">
             <option value="Matematika">Matematika</option>
             <option value="Ona tili">Ona tili</option>
-            <option value="Rus tili">Rus tili</option>
-            <option value="Ingliz tili">Ingliz tili</option>
-            <option value="Fizika">Fizika</option>
             <option value="Huquq">Huquq</option>
             <option value="Tarix">Tarix</option>
-            <option value="IQ">IQ</option>
             <option value="Biologiya">Biologiya</option>
             <option value="Kimyo">Kimyo</option>
             <option value="Umumiy">Umumiy (90 talik DTM)</option>
         </select>
-        <input type="number" id="testCode" placeholder="Test kodi (Masalan: 01)">
+        <input type="text" id="testCode" placeholder="Test kodi (Masalan: 04)">
     </div>
 
     <form id="quizForm" class="q-container"></form>
@@ -45,6 +41,9 @@
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
+
+        // 1. BU YERGA O'ZINGIZNING GOOGLE SCRIPT URL-INGIZNI QO'YING!
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycb...SIZNING_URL.../exec";
 
         function generateQuestions() {
             const subj = document.getElementById('subject').value;
@@ -66,31 +65,55 @@
         }
         generateQuestions();
 
-        function sendData() {
+        async function sendData() {
             const name = document.getElementById('fullname').value.trim();
-            const code = document.getElementById('testCode').value;
+            const code = document.getElementById('testCode').value.trim();
+            const subject = document.getElementById('subject').value;
+
+            if (name.split(" ").length < 2) { alert("Ism va familiyangizni to'liq yozing!"); return; }
+            if (!code) { alert("Test kodini kiriting!"); return; }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Yuborilmoqda...";
+
+            const form = document.getElementById('quizForm');
+            const formData = new FormData(form);
+            let answersArr = [];
             
-            // 2-Muammo: Ism nazorati
-            const nameParts = name.split(" ");
-            if (nameParts.length < 2 || nameParts[1].length < 2) {
-                alert("Iltimos, ism va familiyangizni to'liq kiriting!");
-                return;
+            // Javoblarni ketma-ketlikda yig'ish (A,B,C...)
+            const count = (subject === "Umumiy") ? 90 : 30;
+            for (let i = 1; i <= count; i++) {
+                answersArr.push(formData.get(i.toString()) || " ");
             }
-            if(!code) { alert("Test kodini kiriting!"); return; }
+            const answersString = answersArr.join("");
 
-            document.getElementById('submitBtn').disabled = true;
-            document.getElementById('submitBtn').innerText = "Yuborilmoqda...";
+            // Google Script-ga yuboriladigan ma'lumot
+            const payload = {
+                userId: tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : 6045817037,
+                name: name,
+                kod: code,
+                answers: answersString,
+                subject: subject
+            };
 
-            const answers = {};
-            new FormData(document.getElementById('quizForm')).forEach((v, k) => answers[k] = v);
+            try {
+                // Fetch orqali to'g'ridan-to'g'ri yuborish
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Muhim: Brauzer xatolik bermasligi uchun
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
 
-            tg.sendData(JSON.stringify({
-                full_name: name,
-                subject: document.getElementById('subject').value,
-                test_code: code,
-                answers: answers
-            }));
-            setTimeout(() => tg.close(), 800);
+                alert("Natijangiz qabul qilindi! Botga qaytib javobni tekshiring.");
+                tg.close();
+            } catch (error) {
+                alert("Xatolik yuz berdi: " + error);
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Natijani Yuborish";
+            }
         }
     </script>
 </body>
