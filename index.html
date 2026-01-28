@@ -27,7 +27,7 @@
         
         <label for="fullname">Ism va Familiya:</label>
         <input type="text" id="fullname" placeholder="Namuna: Ali Valiyev" required>
-        <div class="hint">Kamida 3 ta harf va bo'sh joy bo'lishi shart.</div>
+        <div class="hint">Ism va familiya kamida 3 tadan harf va orada bo'sh joy bo'lishi shart.</div>
 
         <label for="subject">Fan tanlang:</label>
         <select id="subject" onchange="generateQuestions()">
@@ -55,7 +55,7 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // SCRIPT URL - sizning Google Script manzilingiz
+        // 1. URL TO'G'IRLANDI (Takrorlanish olib tashlandi)
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQWIAdr6YgYriIUZQsjW_xNhentrYYS6RDt4g-ZaEBNMUhZcdeLVo6C68gRZdC9_l5iA/exec";
 
         function generateQuestions() {
@@ -79,14 +79,16 @@
         generateQuestions();
 
         async function sendData() {
-            const name = document.getElementById('fullname').value.trim();
+            const nameInput = document.getElementById('fullname').value.trim();
             const code = document.getElementById('testCode').value.trim();
             const subject = document.getElementById('subject').value;
 
-            // ISMNI TEKSHIRISH (Kamida 3 ta harf va bo'sh joy)
-            const nameRegex = /^[A-Za-zА-Яа-яЁёO'o'G'g'shchSHCH]{3,}\s+[A-Za-zА-Яа-яЁёO'o'G'g'shchSHCH]{3,}/;
-            if (!nameRegex.test(name)) {
-                alert("Iltimos, ism va familiyangizni namunadagidek yozing (Masalan: Ali Valiyev). Ism va familiya kamida 3 tadan harf bo'lishi kerak.");
+            // ISMNI TEKSHIRISH (Filtr: Kamida 2 ta so'z, har biri kamida 3 ta harf)
+            const words = nameInput.split(/\s+/);
+            const isValidName = words.length >= 2 && words.every(w => w.length >= 3);
+
+            if (!isValidName) {
+                alert("Iltimos, ism va familiyangizni to'liq yozing!\nNamuna: Ali Valiyev (Nickname mumkin emas)");
                 return;
             }
 
@@ -106,29 +108,34 @@
             }
             const answersString = answersArr.join("");
 
+            // Google Script-ga yuboriladigan ob'ekt
             const payload = {
+                type: "test_result", // Script'ga nima ekanini bildiramiz
                 userId: tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : "6045817037",
-                name: name,
+                name: nameInput,
                 kod: code,
                 answers: answersString,
                 subject: subject
             };
 
             try {
+                // Fetch so'rovi
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors', 
+                    cache: 'no-cache',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
+                // Muvaffaqiyatli xabar
                 setTimeout(() => {
-                    alert("Natijangiz qabul qilindi! Botga qaytib javobni tekshiring.");
+                    alert("✅ Natijangiz qabul qilindi! Botga qaytib javobni ko'rishingiz mumkin.");
                     tg.close();
                 }, 1000);
 
             } catch (error) {
-                alert("Xatolik: " + error);
+                alert("❌ Xatolik yuz berdi: " + error);
                 submitBtn.disabled = false;
                 submitBtn.innerText = "Natijani Yuborish";
             }
