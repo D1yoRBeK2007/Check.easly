@@ -2,7 +2,7 @@ const { Bot, webhookCallback } = require("grammy");
 const { createClient } = require("@supabase/supabase-js");
 
 // Bularni o'z ma'lumotlaringiz bilan almashtirasiz
-const bot = new Bot("TELEGRAM_BOT_TOKEN_SHU_YERGA");
+const bot = new Bot("8590338050:AAH5-osx-g1VpgtvcUogYJE5E7H2y-f8YSM");
 const supabase = createClient(
     "https://hjwjomkywxnijfxnrwdt.supabase.co", 
     "sb_publishable_Xob1n96Fs5aqQlUZuhBbKA_eKn3jsuT"
