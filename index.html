@@ -1,125 +1,90 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Imtihon Platformasi</title>
+    <title>Universal Imtihon Platformasi</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background:#f0f2f5; padding:15px; }
+        body { font-family: 'Segoe UI', sans-serif; background:#f0f2f5; padding:15px; user-select: none; }
         .card { background:white; padding:20px; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.08); margin-bottom:20px; }
-        h3 { color:#0088cc; border-bottom:2px solid #eee; padding-bottom:10px; }
-        label { display:block; margin-top:10px; font-weight:bold; }
-        input, select { width:100%; padding:12px; margin:5px 0 15px 0; border-radius:10px; border:2px solid #dfe3e8; box-sizing: border-box; }
-        .btn { width:100%; padding:18px; background:#28a745; color:white; border:none; border-radius:12px; font-size:18px; cursor:pointer; margin-top:20px; transition: 0.3s; }
-        .btn:active { background: #218838; transform: scale(0.98); }
-        .q-container { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
-        .q-card { background:white; padding:12px; border-radius:12px; border-left:5px solid #0088cc; box-shadow:0 2px 6px rgba(0,0,0,0.04); }
-        .options { display:flex; justify-content:space-between; margin-top:8px; }
-        @media (max-width: 480px) { .q-container { grid-template-columns: 1fr; } }
+        h3 { color:#0088cc; border-bottom:2px solid #eee; padding-bottom:10px; margin-top: 0; }
+        label { display:block; margin-top:12px; font-weight:600; color: #333; }
+        input, select { width:100%; padding:12px; margin:5px 0 10px 0; border-radius:10px; border:2px solid #dfe3e8; box-sizing: border-box; font-size: 16px; }
+        input:focus, select:focus { border-color: #0088cc; outline: none; }
+        
+        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        .btn { width:100%; padding:18px; background:#28a745; color:white; border:none; border-radius:12px; font-size:18px; cursor:pointer; margin-top:20px; transition: 0.3s; font-weight: bold; }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        
+        .q-container { display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap:10px; }
+        .q-card { background:white; padding:10px; border-radius:12px; border-left:4px solid #0088cc; box-shadow:0 2px 4px rgba(0,0,0,0.05); }
+        .q-title { font-size: 14px; font-weight: bold; margin-bottom: 5px; display: block; }
+        .options { display:flex; justify-content:space-between; }
+        .options label { margin: 0; font-weight: normal; cursor: pointer; padding: 2px 5px; }
+        .options input { width: auto; margin: 0 4px 0 0; }
     </style>
 </head>
 <body>
+
 <div class="card">
-    <h3>📝 Ro'yxatdan o'tish</h3>
+    <h3>⚙️ Test Sozlamalari</h3>
     <label>Ism va Familiya:</label>
     <input type="text" id="fullname" placeholder="Namuna: Ali Valiyev">
     
-    <label>Fan tanlang:</label>
-    <select id="subject" onchange="generateQuestions()">
+    <label>Test kodi (O'qituvchidan olingan):</label>
+    <input type="text" id="testCode" placeholder="Masalan: 123">
+
+    <label>Fan:</label>
+    <select id="subject">
         <option value="Matematika">Matematika</option>
         <option value="Ona tili">Ona tili</option>
-        <option value="Huquq">Huquq</option>
         <option value="Tarix">Tarix</option>
+        <option value="Ingliz tili">Ingliz tili</option>
         <option value="Biologiya">Biologiya</option>
         <option value="Kimyo">Kimyo</option>
         <option value="Fizika">Fizika</option>
-        <option value="Rus tili">Rus tili</option>
-        <option value="IQ">IQ (Mantiq)</option>
+        <option value="Huquq">Huquq</option>
+        <option value="IQ (Mantiq)">IQ (Mantiq)</option>
         <option value="Boshqa">Boshqa fanlar</option>
-        <option value="Umumiy">Umumiy (90 talik DTM)</option>
+    </style>
     </select>
-    
-    <label>Test kodi:</label>
-    <input type="text" id="testCode" placeholder="Namuna: 125">
+
+    <div class="settings-grid">
+        <div>
+            <label>Savollar soni:</label>
+            <input type="number" id="qCount" value="30" min="1" max="150" onchange="generateQuestions()">
+        </div>
+        <div>
+            <label>Baholash formati:</label>
+            <select id="gradingFormat">
+                <option value="standard">Oddiy (1 ball)</option>
+                <option value="dtm">DTM (1.1 / 2.1 / 3.1)</option>
+            </select>
+        </div>
+    </div>
 </div>
 
 <form id="quizForm" class="q-container"></form>
 
-<button type="button" id="submitBtn" class="btn" onclick="sendData()">Natijani Yuborish</button>
+<button type="button" id="submitBtn" class="btn" onclick="submitTest()">Natijani Yuborish</button>
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // Sening Apps Script URL manziling
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx-6gJuF_uy_3-aGSsv3DcOpzepjIcnB0SovQoS-tKdge1_aCQP0PehNQ9GQJIa4Its6w/exec";
+    // ---------------------------------------------------------
+    // ⚠️ SUPABASE SOZLAMALARI (O'ZINGIZNIKINI QO'YING)
+    // ---------------------------------------------------------
+    const SUPABASE_URL = 'hjwjomkywxnijfxnrwdt'; 
+    const SUPABASE_KEY = 'sb_publishable_Xob1n96Fs5aqQlUZuhBbKA_eKn3jsuT';
+    // ---------------------------------------------------------
 
-    function generateQuestions(){
-        const subj = document.getElementById('subject').value;
-        const count = (subj === "Umumiy") ? 90 : 30;
-        const container = document.getElementById('quizForm');
-        container.innerHTML = "";
-        for(let i=1; i<=count; i++){
-            container.innerHTML += `
-                <div class="q-card">
-                    <b>${i}-savol</b>
-                    <div class="options">
-                        <label><input type="radio" name="${i}" value="a" required> A</label>
-                        <label><input type="radio" name="${i}" value="b"> B</label>
-                        <label><input type="radio" name="${i}" value="c"> C</label>
-                        <label><input type="radio" name="${i}" value="d"> D</label>
-                    </div>
-                </div>`;
-        }
-    }
-    generateQuestions();
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    async function sendData(){
-        const btn = document.getElementById('submitBtn');
-        const name = document.getElementById('fullname').value.trim();
-        const code = document.getElementById('testCode').value.trim();
-        const subject = document.getElementById('subject').value;
-
-        if(!name || name.split(/\s+/).length < 2){ alert("Iltimos ism va familiya to‘liq kiriting!"); return; }
-        if(!code){ alert("Test kodini kiriting!"); return; }
-
-        btn.disabled = true;
-        btn.innerText = "Yuborilmoqda...";
-
-        const formData = new FormData(document.getElementById('quizForm'));
-        let answers = "";
-        const count = (subject === "Umumiy") ? 90 : 30;
-        
-        for(let i=1; i<=count; i++) {
-            answers += formData.get(i.toString()) || "?";
-        }
-
-        const payload = {
-            userId: tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : "6045817037",
-            name: name,
-            testId: code, // Apps Script shuni kutadi
-            userAnswers: answers, // Apps Script shuni kutadi
-            subject: subject
-        };
-
-        try {
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                cache: 'no-cache',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            
-            alert("✅ Natijangiz qabul qilindi! Botga qaytib natijani tekshiring.");
-            tg.close();
-        } catch (e) {
-            alert("Xatolik yuz berdi. Internetni tekshiring!");
-            btn.disabled = false;
-            btn.innerText = "Natijani Yuborish";
-        }
-    }
-</script>
-</body>
-</html>
+    // Savollarni generatsiya qilish (Soni o'zgarganda ishlaydi)
+    function generateQuestions
