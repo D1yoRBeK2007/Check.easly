@@ -5,7 +5,7 @@ const { createClient } = require("@supabase/supabase-js");
 const bot = new Bot("TELEGRAM_BOT_TOKEN_SHU_YERGA");
 const supabase = createClient(
     "https://hjwjomkywxnijfxnrwdt.supabase.co", 
-    "SERVICE_ROLE_KEY_SHU_YERGA"
+    "sb_publishable_Xob1n96Fs5aqQlUZuhBbKA_eKn3jsuT"
 );
 
 // Start buyrug'i
