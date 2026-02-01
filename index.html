@@ -132,6 +132,24 @@
         // Bu yerga oldingi xabarda berilgan natijani hisoblash va yuborish kodini qo'shasiz
         tg.showAlert("Natijangiz hisoblanmoqda...");
     }
+    // Ilova ichida:
+const tg = window.Telegram.WebApp;
+
+function finishTest() {
+    // 1. Ma'lumotlarni yig'ish
+    const testCode = "101"; // Masalan inputdan olinadi
+    const answers = "ABCD..."; // O'quvchi belgilagan javoblar
+    
+    // 2. Vaqtni hisoblash (Sekundda)
+    // Ilova ochilganda startTime = Date.now() qilib olish kerak edi
+    const durationSeconds = Math.floor((Date.now() - startTime) / 1000);
+
+    // 3. Botga yuborish (KOD * JAVOBLAR * VAQT)
+    const dataToSend = `${testCode}*${answers}*${durationSeconds}`;
+    
+    tg.sendData(dataToSend); // Bu funksiya botga "web_app_data" yuboradi
+    tg.close();
+}
 </script>
 
 </body>
