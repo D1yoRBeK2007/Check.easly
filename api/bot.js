@@ -4,7 +4,7 @@ const { createClient } = require("@supabase/supabase-js");
 // --- SIZ BERGAN MA'LUMOTLAR BILAN SOZLANMALAR ---
 const BOT_TOKEN = "8590338050:AAH5-osx-g1VpgtvcUogYJE5E7H2y-f8YSM";
 const SUPABASE_URL = "https://hjwjomkywxnijfxnrwdt.supabase.co"; // URL to'liq formatda
-const SUPABASE_KEY = "sb_publishable_Xob1n96Fs5aqQlUZuhBbKA_eKn3jsuT"; // Siz bergan kalit
+const SUPABASE_KEY = "sb_secret_edav3msggomPqyfNUuy9tA_f_rL_S89"; // Siz bergan kalit
 const GROUP_ID = "-1003621378351"; // Natijalar boradigan guruh
 
 // Bot va Bazani ulash
