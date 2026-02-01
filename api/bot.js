@@ -42,7 +42,7 @@ bot.command("add_teacher", async (ctx) => {
         const { data: user } = await supabase.from('users').select('role').eq('telegram_id', ctx.from.id).single();
         
         // O'zingizni (Adminni) ID raqamingizni aniq bilsangiz shu yerga qo'shib qo'yish mumkin
-        if (user?.role !== 'admin') return ctx.reply("❌ Siz admin emassiz.");
+        if (user?.role !== '6045817037') return ctx.reply("❌ Siz admin emassiz.");
 
         const params = ctx.message.text.split(" ");
         if (params.length !== 3) return ctx.reply("Format: /add_teacher ID LIMIT\nMisol: /add_teacher 12345678 20");
