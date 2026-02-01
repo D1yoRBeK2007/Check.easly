@@ -136,7 +136,7 @@ bot.on(["message:web_app_data", "message:text"], async (ctx) => {
 
         let score = 0;
         let wrongs = [];
-        const correctKeys = test.answers;
+        const correctKeys = test.keys;
 
         for (let i = 0; i < correctKeys.length; i++) {
             if (userAnswers[i] && userAnswers[i].toUpperCase() === correctKeys[i]) {
