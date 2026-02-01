@@ -6,6 +6,7 @@ const BOT_TOKEN = "8590338050:AAH5-osx-g1VpgtvcUogYJE5E7H2y-f8YSM";
 const SUPABASE_URL = "https://hjwjomkywxnijfxnrwdt.supabase.co"; // URL to'liq formatda
 const SUPABASE_KEY = "sb_secret_edav3msggomPqyfNUuy9tA_f_rL_S89"; // Siz bergan kalit
 const GROUP_ID = "-1003621378351"; // Natijalar boradigan guruh
+const ADMIN_ID = "6045817037"; // Sizning Telegram ID raqamingiz
 
 // Bot va Bazani ulash
 const bot = new Bot(BOT_TOKEN);
@@ -42,7 +43,7 @@ bot.command("add_teacher", async (ctx) => {
         const { data: user } = await supabase.from('users').select('role').eq('telegram_id', ctx.from.id).single();
         
         // O'zingizni (Adminni) ID raqamingizni aniq bilsangiz shu yerga qo'shib qo'yish mumkin
-        if (user?.role !== '6045817037') return ctx.reply("❌ Siz admin emassiz.");
+        if (user?.role !== 'admin') return ctx.reply("❌ Siz admin emassiz.");
 
         const params = ctx.message.text.split(" ");
         if (params.length !== 3) return ctx.reply("Format: /add_teacher ID LIMIT\nMisol: /add_teacher 12345678 20");
